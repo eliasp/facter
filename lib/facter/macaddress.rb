@@ -14,12 +14,14 @@ Facter.add(:macaddress) do
   confine :kernel => 'Linux'
   has_weight  10                # about an order of magnitude faster
   setcode do
-    begin
-      path = Dir.glob('/sys/class/net/*').reject {|x| x[-3..-1] == '/lo' }.first
-      path and File.read(path + '/address').chomp
-    rescue Exception
-      nil
-    end
+    catch(:noresult) {
+      throw(:noresult, nil) unless File.exists?('/sys/class/net/')
+      Dir.entries('/sys/class/net/')[2..-1].each do |dev|
+        address = File.read("/sys/class/net/#{dev}/address").chomp
+        throw(:noresult, nil) if /^(?:00:)+00$|^\s/.match(address)
+        address
+      end
+    }
   end
 end
 
