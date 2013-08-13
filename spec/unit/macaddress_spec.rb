@@ -47,11 +47,10 @@ describe "macaddress fact" do
         File.stubs(:readable?).with('/sys/class/net/ip6tnl0/address').returns(true)
         File.stubs(:readable?).with('/sys/class/net/lo/address').returns(true)
         File.stubs(:readable?).with('/sys/class/net/sit0/address').returns(true)
-        File.stubs(:read).with('/sys/class/net/eth0/address').returns( "00:12:3f:be:22:01\n" )
-        File.stubs(:read).with('/sys/class/net/ipt6tnl0/address').returns( "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00\n" )
-        File.stubs(:read).with('/sys/class/net/lo/address').returns( "00:00:00:00:00:00\n" )
-        File.stubs(:read).with('/sys/class/net/sit0/address').returns( "00:00:00:00\n" )
-
+        Facter::Util::FileRead.stubs(:read).with('/sys/class/net/eth0/address').returns( "00:12:3f:be:22:01\n" )
+        Facter::Util::FileRead.stubs(:read).with('/sys/class/net/ipt6tnl0/address').returns( "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00\n" )
+        Facter::Util::FileRead.stubs(:read).with('/sys/class/net/lo/address').returns( "00:00:00:00:00:00\n" )
+        Facter::Util::FileRead.stubs(:read).with('/sys/class/net/sit0/address').returns( "00:00:00:00\n" )
         Dir.stubs(:entries).with('/sys/class/net').returns(['.', '..', 'eth0', 'ip6tnl0', 'lo', 'sit0'])
       end
 
