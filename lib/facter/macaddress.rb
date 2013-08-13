@@ -15,12 +15,24 @@ Facter.add(:macaddress) do
   has_weight  10                # about an order of magnitude faster
   setcode do
     catch(:result) {
+
+      # if the required /sys directory doesn't exist, return 'nil'
       throw(:result, nil) unless Dir.exists?('/sys/class/net/')
+
+      # get all entries where each entry represents a net device
       Dir.entries('/sys/class/net/').find_all{ |entry|
+
+        # filter out . and .. by checking for a 'address' file in the entry's directory
         File.readable?("/sys/class/net/#{entry}/address")
       }.each do |dev|
+
+        # read the address and remove trailing newlines
         address = File.read("/sys/class/net/#{dev}/address").chomp
+
+        # stop processing once the 1st valid mac address was found
         throw(:result, address) if ! /^(?:00:)+00$|^\s/.match(address)
+
+        # default to 'nil' if no valid mac address could be found
         nil
       end
     }
