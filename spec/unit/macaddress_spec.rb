@@ -17,10 +17,10 @@ describe "macaddress fact" do
 
   describe "when run on Linux" do
     describe "with /sys available" do
-      netdir = '/sys/class/net'
-      devicedirs = []
-      addressfiles = []
-      stubdevs = [
+      @netdir = '/sys/class/net'
+      @devicedirs = []
+      @addressfiles = []
+      @stubdevs = [
         # dev       mac address
         ['eth0',    "00:12:3f:be:22:01\n"],
         ['ip6tnl0', "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00\n"],
@@ -33,21 +33,21 @@ describe "macaddress fact" do
         Dir.stubs(:exist?).with(netdir).returns(true)
 
         # reset arrays to be empty again
-        devicedirs = []
-        addressfiles = []
+        @devicedirs = []
+        @addressfiles = []
         stubdevs.each do |dev, mac|
-          devicedirs << "#{netdir}/#{dev}"
+          @devicedirs << "#{netdir}/#{dev}"
           addressfile = "#{netdir}/#{dev}/address"
-          addressfiles << addressfile
+          @addressfiles << addressfile
           File.stubs(:readable?).with(addressfile).returns(true)
           File.stubs(:read).with(addressfile).returns(mac)
         end
 
-        Dir.stubs(:entries).with(netdir).returns(addressfiles)
+        Dir.stubs(:entries).with(@netdir).returns(@addressfiles)
       end
 
       it "should get netdevice directory entries in /sys/class/net/" do
-        Dir.expects(:entries).with(netdir).returns(devicedirs)
+        Dir.expects(:entries).with(@netdir).returns(@devicedirs)
         Facter.fact(:macaddress)
       end
 
