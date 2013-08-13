@@ -20,7 +20,7 @@ Facter.add(:macaddress) do
       throw(:result, nil) unless Dir.exists?('/sys/class/net/')
 
       # get all entries where each entry represents a net device
-      Dir.entries('/sys/class/net/').find_all{ |entry|
+      Dir.entries('/sys/class/net').find_all{ |entry|
 
         # filter out . and .. by checking for a 'address' file in the entry's directory
         File.readable?("/sys/class/net/#{entry}/address")
