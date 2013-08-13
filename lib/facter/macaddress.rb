@@ -17,7 +17,7 @@ Facter.add(:macaddress) do
     catch(:result) {
 
       # if the required /sys directory doesn't exist, return 'nil'
-      throw(:result, nil) unless Dir.exists?('/sys/class/net/')
+      throw(:result, nil) unless Dir.exists?('/sys/class/net')
 
       # get all entries where each entry represents a net device
       Dir.entries('/sys/class/net').find_all{ |entry|
