@@ -31,8 +31,8 @@ describe "macaddress fact" do
         Facter::Util::FileRead.stubs(:read).with("/etc/os-release").returns('VERSION_ID=1.5.0')
         Facter.fact(:kernel).stubs(:value).returns("Linux")
         Facter.fact(:operatingsystem).stubs(:value).returns("Linux")
-        #Dir.stubs(:exist?).with(netdir).returns(true)
-        Dir.stubs(:exist?).with('/sys/class/net').returns(true)
+        #Dir.stubs(:exists?).with(netdir).returns(true)
+        Dir.stubs(:exists?).with('/sys/class/net').returns(true)
 
         ## reset arrays to be empty again
         #@devicedirs = []

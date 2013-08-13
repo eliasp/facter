@@ -27,7 +27,7 @@ Facter.add(:macaddress) do
       }.each do |dev|
 
         # read the address and remove trailing newlines
-        address = Facter::Util::FileRead.read("/sys/class/net/#{dev}/address").chomp
+        address = String(Facter::Util::FileRead.read("/sys/class/net/#{dev}/address")).chomp
 
         # stop processing once the 1st valid mac address was found
         throw(:result, address) if ! /^(?:00:)+00$|^\s/.match(address)
