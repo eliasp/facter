@@ -17,35 +17,62 @@ describe "macaddress fact" do
 
   describe "when run on Linux" do
     describe "with /sys available" do
+      netdir = '/sys/class/net'
+      devicedirs = []
+      addressfiles = []
+      stubdevs = [
+        # dev       mac address
+        ['eth0',    "00:12:3f:be:22:01\n"],
+        ['ip6tnl0', "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00\n"],
+        ['lo',      "00:00:00:00:00:00\n"],
+        ['sit0',    "00:00:00:00\n"],
+      ]
       before :each do
         Facter.fact(:kernel).stubs(:value).returns("Linux")
         Facter.fact(:operatingsystem).stubs(:value).returns("Linux")
-        File.stubs(:exist?).with('/sys/class/net/').returns(true)
-        File.stubs(:read).with('/sys/class/net/eth0/address').returns( "00:12:3f:be:22:01\n" )
-        File.stubs(:read).with('/sys/class/net/ip6tnl0/address').returns( "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00\n" )
-        File.stubs(:read).with('/sys/class/net/lo/address').returns( "00:00:00:00:00:00\n" )
-        File.stubs(:read).with('/sys/class/net/sit0/address').returns( "00:00:00:00\n" )
+        Dir.stubs(:exist?).with(netdir).returns(true)
+
+        # reset arrays to be empty again
+        devicedirs = []
+        addressfiles = []
+        stubdevs.each do |dev, mac|
+          devicedirs << "#{netdir}/#{dev}"
+          addressfile = "#{netdir}/#{dev}/address"
+          addressfiles << addressfile
+          File.stubs(:readable?).with(addressfile).returns(true)
+          File.stubs(:read).with(addressfile).returns(mac)
+        end
+
+        Dir.stubs(:entries).with(netdir).returns(addressfiles)
       end
 
       it "should get netdevice directory entries in /sys/class/net/" do
-        Dir.stubs(:entries).with('/sys/class/net/').returns( ['/sys/class/net/eth0', '/sys/class/net/lo'] )
-
-        File.expects(:entries).with('/sys/class/net/').should == ['/sys/class/net/eth0', '/sys/class/net/lo']
+        Dir.expects(:entries).with(netdir).returns(devicedirs)
+        Facter.fact(:macaddress)
       end
 
       it "should read /sys/class/net/eth0/address" do
+        File.expects(:read).with('/sys/class/net/eth0/address').returns( "00:12:3f:be:22:01\n" )
         Facter.fact(:macaddress).value.should == "00:12:3f:be:22:01"
       end
 
       describe "and only invalid interfaces available" do
         before :each do
-          #Dir.expects(:glob).with('/sys/class/net/*').returns(['/sys/class/net/ip6tnl0', '/sys/class/net/lo', '/sys/class/net/sit0'])
+          Dir.stubs(:entries).with('/sys/class/net').returns(['/sys/class/net/ip6tnl0', '/sys/class/net/lo', '/sys/class/net/sit0'])
         end
 
         it "should not return any mac address" do
+          Facter.value(:macaddress).should == nil
+        end
+
+        it "should read all address files" do
+          File.expects(:read).with('/sys/class/net/ipt6tnl0').returns( "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00\n" )
+          File.expects(:read).with('/sys/class/net/lo').returns( "00:00:00:00:00:00\n" )
+          File.expects(:read).with('/sys/class/net/sit0').returns( "00:00:00:00\n" )
         end
       end
     end
+
     describe "without /sys available" do
       before :each do
         Facter.fact(:kernel).stubs(:value).returns("Linux")
