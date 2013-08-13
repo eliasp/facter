@@ -28,6 +28,7 @@ describe "macaddress fact" do
       #  ['sit0',    "00:00:00:00\n"],
       #]
       before :each do
+        Facter::Util::FileRead.stubs(:read).with("/etc/os-release").returns('VERSION_ID=1.5.0')
         Facter.fact(:kernel).stubs(:value).returns("Linux")
         Facter.fact(:operatingsystem).stubs(:value).returns("Linux")
         #Dir.stubs(:exist?).with(netdir).returns(true)
